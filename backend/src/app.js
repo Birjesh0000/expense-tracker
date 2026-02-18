@@ -7,7 +7,16 @@ import { validateIdempotencyKey } from './middleware/idempotency.middleware.js';
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3004',
+    'https://expense-tracker-india.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Idempotency-Key']
+}));
 app.use(express.json({ limit: '1mb' }));
 
 // Request logging middleware
