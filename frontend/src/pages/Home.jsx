@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ExpenseForm from '../components/ExpenseForm.jsx';
 import ExpenseTable from '../components/ExpenseTable.jsx';
 import FilterBar from '../components/FilterBar.jsx';
@@ -8,6 +8,14 @@ import SuccessAlert from '../components/SuccessAlert.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import expenseApi from '../api/expenseApi.js';
 
+// Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  initialDelay: 1000,
+  maxDelay: 10000,
+  backoffMultiplier: 2,
+};
+
 function Home() {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +24,11 @@ function Home() {
   const [success, setSuccess] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('date_desc');
+  const [retryAttempt, setRetryAttempt] = useState(0);
+
+  // Reference for abort controllers
+  const fetchAbortControllerRef = useRef(null);
+  const addAbortControllerRef = useRef(null);
 
   // Fetch expenses on mount and when filters change
   useEffect(() => {
@@ -26,36 +39,86 @@ function Home() {
   }, [selectedCategory, selectedSort]);
 
   const fetchExpenses = async (options = {}) => {
+    // Cancel previous fetch if still in progress
+    if (fetchAbortControllerRef.current) {
+      fetchAbortControllerRef.current.abort();
+    }
+
+    fetchAbortControllerRef.current = new AbortController();
+
     setIsFetching(true);
     setError(null);
+    setRetryAttempt(0);
+
     try {
-      const response = await expenseApi.getExpenses(options);
-      
+      const response = await expenseApi.getExpenses(
+        options,
+        {
+          signal: fetchAbortControllerRef.current.signal,
+          ...RETRY_CONFIG,
+          onRetry: ({ attempt, maxRetries }) => {
+            setRetryAttempt(attempt);
+            console.log(`Retrying fetch: attempt ${attempt}/${maxRetries}`);
+          },
+        }
+      );
+
       if (response.status === 'success') {
         setExpenses(response.data.expenses || []);
       } else {
         setError('Failed to fetch expenses');
       }
     } catch (err) {
+      // Don't show error if request was aborted
+      if (err.name === 'AbortError') {
+        console.log('Fetch cancelled');
+        return;
+      }
+
       console.error('Error fetching expenses:', err);
-      setError(err.message || 'Failed to load expenses. Please try again.');
+
+      // Build error message with retry info
+      let errorMessage = err.message || 'Failed to load expenses. Please try again.';
+      if (retryAttempt > 0) {
+        errorMessage += ` (Attempted retries: ${retryAttempt}/${RETRY_CONFIG.maxRetries})`;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsFetching(false);
     }
   };
 
   const handleAddExpense = async (formData) => {
+    // Cancel previous add if still in progress
+    if (addAbortControllerRef.current) {
+      addAbortControllerRef.current.abort();
+    }
+
+    addAbortControllerRef.current = new AbortController();
+
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    
+    setRetryAttempt(0);
+
     try {
-      const response = await expenseApi.createExpense({
-        amount: Number(formData.amount),
-        category: formData.category,
-        description: formData.description,
-        date: formData.date,
-      });
+      const response = await expenseApi.createExpense(
+        {
+          amount: Number(formData.amount),
+          category: formData.category,
+          description: formData.description,
+          date: formData.date,
+        },
+        {
+          signal: addAbortControllerRef.current.signal,
+          ...RETRY_CONFIG,
+          onRetry: ({ attempt, maxRetries }) => {
+            setRetryAttempt(attempt);
+            console.log(`Retrying add: attempt ${attempt}/${maxRetries}`);
+          },
+        }
+      );
 
       if (response.status === 'success') {
         setSuccess('Expense added successfully!');
@@ -70,8 +133,21 @@ function Home() {
         setError('Failed to create expense');
       }
     } catch (err) {
+      // Don't show error if request was aborted
+      if (err.name === 'AbortError') {
+        console.log('Add cancelled');
+        return;
+      }
+
       console.error('Error adding expense:', err);
-      setError(err.message || 'Failed to add expense. Please try again.');
+
+      // Build error message with retry info
+      let errorMessage = err.message || 'Failed to add expense. Please try again.';
+      if (retryAttempt > 0) {
+        errorMessage += ` (Attempted retries: ${retryAttempt}/${RETRY_CONFIG.maxRetries})`;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

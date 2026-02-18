@@ -1,7 +1,10 @@
 /**
  * API Service for Expense Tracker
  * Handles all communication with the backend API
+ * Supports retry logic with exponential backoff
  */
+
+import { retryWithBackoff } from '../utils/retryUtils.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -17,84 +20,118 @@ function generateIdempotencyKey() {
 }
 
 /**
- * Create a new expense
+ * Create a new expense with retry support
  * @param {Object} expenseData - { amount, category, description, date }
  * @param {AbortSignal} signal - For request cancellation
+ * @param {Object} retryOptions - Retry configuration
  * @returns {Promise<Object>} Response from server
  */
-export const createExpense = async (expenseData, signal) => {
-  try {
-    const idempotencyKey = generateIdempotencyKey();
-    
-    const response = await fetch(`${API_BASE_URL}/expenses`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Idempotency-Key': idempotencyKey,
-      },
-      body: JSON.stringify(expenseData),
-      signal, // Allow request cancellation
-    });
+export const createExpense = async (expenseData, signal, retryOptions = {}) => {
+  const idempotencyKey = generateIdempotencyKey();
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create expense');
-    }
+  const makeRequest = async (abortSignal = signal) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/expenses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey,
+        },
+        body: JSON.stringify(expenseData),
+        signal: abortSignal,
+      });
 
-    return await response.json();
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      console.log('Request was cancelled');
+      if (!response.ok) {
+        const errorData = await response.json();
+        const error = new Error(errorData.message || 'Failed to create expense');
+        error.status = response.status;
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw error;
+      }
       throw error;
     }
-    console.error('Error creating expense:', error);
-    throw error;
+  };
+
+  // Use retry logic if enabled
+  if (retryOptions.enabled !== false) {
+    return retryWithBackoff(() => makeRequest(signal), {
+      maxRetries: retryOptions.maxRetries || 3,
+      initialDelay: retryOptions.initialDelay || 1000,
+      maxDelay: retryOptions.maxDelay || 10000,
+      backoffMultiplier: retryOptions.backoffMultiplier || 2,
+      onRetry: retryOptions.onRetry,
+    });
   }
+
+  return makeRequest(signal);
 };
 
 /**
- * Get all expenses with optional filtering and sorting
+ * Get all expenses with optional filtering and sorting, with retry support
  * @param {Object} options - { category, sort }
  * @param {AbortSignal} signal - For request cancellation
+ * @param {Object} retryOptions - Retry configuration
  * @returns {Promise<Object>} List of expenses and total
  */
-export const getExpenses = async (options = {}, signal) => {
-  try {
-    const params = new URLSearchParams();
-    
-    if (options.category) {
-      params.append('category', options.category);
-    }
-    
-    if (options.sort) {
-      params.append('sort', options.sort);
-    }
+export const getExpenses = async (options = {}, signal, retryOptions = {}) => {
+  const makeRequest = async (abortSignal = signal) => {
+    try {
+      const params = new URLSearchParams();
 
-    const queryString = params.toString();
-    const url = queryString ? `${API_BASE_URL}/expenses?${queryString}` : `${API_BASE_URL}/expenses`;
+      if (options.category) {
+        params.append('category', options.category);
+      }
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal, // Allow request cancellation
-    });
+      if (options.sort) {
+        params.append('sort', options.sort);
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch expenses');
-    }
+      const queryString = params.toString();
+      const url = queryString
+        ? `${API_BASE_URL}/expenses?${queryString}`
+        : `${API_BASE_URL}/expenses`;
 
-    return await response.json();
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      console.log('Request was cancelled');
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: abortSignal,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const error = new Error(errorData.message || 'Failed to fetch expenses');
+        error.status = response.status;
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw error;
+      }
       throw error;
     }
-    console.error('Error fetching expenses:', error);
-    throw error;
+  };
+
+  // Use retry logic if enabled
+  if (retryOptions.enabled !== false) {
+    return retryWithBackoff(() => makeRequest(signal), {
+      maxRetries: retryOptions.maxRetries || 3,
+      initialDelay: retryOptions.initialDelay || 1000,
+      maxDelay: retryOptions.maxDelay || 10000,
+      backoffMultiplier: retryOptions.backoffMultiplier || 2,
+      onRetry: retryOptions.onRetry,
+    });
   }
+
+  return makeRequest(signal);
 };
 
 /**
