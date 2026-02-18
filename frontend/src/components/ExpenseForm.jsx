@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import ValidationError from './ValidationError.jsx';
 import { validateField, validateForm } from '../utils/formValidation.js';
+import usePersistentFormState from '../hooks/usePersistentFormState.js';
 
 function ExpenseForm({ onSubmit, isLoading }) {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     amount: '',
     category: '',
     description: '',
     date: '',
-  });
+  };
+
+  // Use persistent form state to survive page refreshes
+  const { formData, updateFormData, clearFormData } = usePersistentFormState(
+    'expenseFormData',
+    initialFormData
+  );
 
   // Form validation state
   const [fieldErrors, setFieldErrors] = useState({});
@@ -27,10 +34,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
     // Prevent changes while submitting
     if (isSubmitting) return;
 
-    setFormData(prev => ({
-      ...prev,
+    // Update form data (automatically persists to localStorage)
+    updateFormData({
       [name]: value,
-    }));
+    });
 
     // Validate field on change if it was touched
     if (touchedFields[name]) {
@@ -91,19 +98,14 @@ function ExpenseForm({ onSubmit, isLoading }) {
     try {
       await onSubmit(formData);
 
-      // Reset form on success
-      setFormData({
-        amount: '',
-        category: '',
-        description: '',
-        date: '',
-      });
+      // Clear form on success (also clears from localStorage)
+      clearFormData();
       setFieldErrors({});
       setTouchedFields({});
       setSubmitAttempts(0);
     } catch (error) {
       console.error('Form submission error:', error);
-      // Don't reset form on error, let user retry
+      // Don't reset form on error, let user retry (form data is preserved in localStorage)
     } finally {
       setIsSubmitting(false);
     }
