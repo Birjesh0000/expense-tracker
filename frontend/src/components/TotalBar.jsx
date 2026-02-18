@@ -1,13 +1,7 @@
 import React from 'react';
+import { formatCurrency } from '../utils/currencyUtils.js';
 
 function TotalBar({ total, count }) {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   return (
     <div className="bg-gradient-to-r from-blue-600 to-blue-700 shadow rounded-lg p-6 text-white">
       <div className="flex justify-between items-center">
