@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ValidationError from './ValidationError.jsx';
+import { validateField, validateForm } from '../utils/formValidation.js';
 
 function ExpenseForm({ onSubmit, isLoading }) {
   const [formData, setFormData] = useState({
@@ -7,6 +9,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
     description: '',
     date: '',
   });
+
+  // Form validation state
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   // Prevent multiple submissions with local state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +31,32 @@ function ExpenseForm({ onSubmit, isLoading }) {
       ...prev,
       [name]: value,
     }));
+
+    // Validate field on change if it was touched
+    if (touchedFields[name]) {
+      const error = validateField(name, value);
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: error,
+      }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+
+    // Mark field as touched
+    setTouchedFields(prev => ({
+      ...prev,
+      [name]: true,
+    }));
+
+    // Validate field
+    const error = validateField(name, value);
+    setFieldErrors(prev => ({
+      ...prev,
+      [name]: error,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -36,9 +68,19 @@ function ExpenseForm({ onSubmit, isLoading }) {
       return;
     }
 
-    // Validation
-    if (!formData.amount || !formData.category || !formData.description || !formData.date) {
-      alert('Please fill in all fields');
+    // Mark all fields as touched
+    setTouchedFields({
+      amount: true,
+      category: true,
+      description: true,
+      date: true,
+    });
+
+    // Validate entire form
+    const validation = validateForm(formData);
+
+    if (!validation.isValid) {
+      setFieldErrors(validation.errors);
       return;
     }
 
@@ -56,23 +98,25 @@ function ExpenseForm({ onSubmit, isLoading }) {
         description: '',
         date: '',
       });
+      setFieldErrors({});
+      setTouchedFields({});
       setSubmitAttempts(0);
     } catch (error) {
       console.error('Form submission error:', error);
-      // Don't reset form on error, let user retry (form data is in localStorage)
+      // Don't reset form on error, let user retry
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Expense</h2>
+    <div className="bg-white shadow rounded-lg p-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">Add New Expense</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Amount Field */}
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
             Amount
           </label>
           <input
@@ -81,18 +125,26 @@ function ExpenseForm({ onSubmit, isLoading }) {
             name="amount"
             value={formData.amount}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="0.00"
             step="0.01"
             min="0"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${
+              touchedFields.amount && fieldErrors.amount
+                ? 'border-red-500'
+                : 'border-gray-300'
+            }`}
             disabled={isDisabled}
             required
           />
+          {touchedFields.amount && (
+            <ValidationError message={fieldErrors.amount} />
+          )}
         </div>
 
         {/* Category Field */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
             Category
           </label>
           <select
@@ -100,7 +152,12 @@ function ExpenseForm({ onSubmit, isLoading }) {
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            onBlur={handleBlur}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${
+              touchedFields.category && fieldErrors.category
+                ? 'border-red-500'
+                : 'border-gray-300'
+            }`}
             disabled={isDisabled}
             required
           >
@@ -114,11 +171,14 @@ function ExpenseForm({ onSubmit, isLoading }) {
             <option value="Education">Education</option>
             <option value="Other">Other</option>
           </select>
+          {touchedFields.category && (
+            <ValidationError message={fieldErrors.category} />
+          )}
         </div>
 
         {/* Description Field */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
           <textarea
@@ -126,17 +186,25 @@ function ExpenseForm({ onSubmit, isLoading }) {
             name="description"
             value={formData.description}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Enter expense details"
             rows="3"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none transition ${
+              touchedFields.description && fieldErrors.description
+                ? 'border-red-500'
+                : 'border-gray-300'
+            }`}
             disabled={isDisabled}
             required
           />
+          {touchedFields.description && (
+            <ValidationError message={fieldErrors.description} />
+          )}
         </div>
 
         {/* Date Field */}
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
             Date
           </label>
           <input
@@ -145,17 +213,25 @@ function ExpenseForm({ onSubmit, isLoading }) {
             name="date"
             value={formData.date}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            onBlur={handleBlur}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${
+              touchedFields.date && fieldErrors.date
+                ? 'border-red-500'
+                : 'border-gray-300'
+            }`}
             disabled={isDisabled}
             required
           />
+          {touchedFields.date && (
+            <ValidationError message={fieldErrors.date} />
+          )}
         </div>
 
-        {/* Submit Button */}
+        {/* Submit Button - Disabled if form is invalid or loading */}
         <button
           type="submit"
-          disabled={isDisabled}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-md disabled:opacity-70 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center space-x-2"
+          disabled={isDisabled || Object.values(fieldErrors).some(e => e)}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-md disabled:opacity-70 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center space-x-2 mt-8"
         >
           {isDisabled ? (
             <>
