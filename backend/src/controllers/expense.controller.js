@@ -3,7 +3,10 @@ import Expense from '../models/Expense.js';
 // POST /api/expenses - Create a new expense
 export const createExpense = async (req, res, next) => {
   try {
-    const { amount, category, description, date, idempotencyKey } = req.body;
+    const { amount, category, description, date } = req.body;
+
+    // Get idempotency key from header (standard) or request body
+    const idempotencyKey = req.headers['idempotency-key'] || req.body.idempotencyKey;
 
     // Validate required fields
     if (!amount || !category || !description || !date) {
@@ -12,12 +15,29 @@ export const createExpense = async (req, res, next) => {
       });
     }
 
-    // Check for duplicate submission using idempotency key
+    // Validate amount is positive
+    if (Number(amount) <= 0) {
+      return res.status(400).json({
+        error: 'Amount must be greater than 0',
+      });
+    }
+
+    // Handle idempotency - check for duplicate submission
     if (idempotencyKey) {
+      // Validate idempotency key format (UUID or string)
+      if (typeof idempotencyKey !== 'string' || idempotencyKey.trim().length === 0) {
+        return res.status(400).json({
+          error: 'Idempotency-Key must be a non-empty string',
+        });
+      }
+
+      // Check if expense with this idempotency key already exists
       const existingExpense = await Expense.findOne({ idempotencyKey });
       if (existingExpense) {
+        // Return existing response (idempotent behavior)
         return res.status(200).json({
-          message: 'Expense already exists (duplicate request)',
+          message: 'Expense already created',
+          isIdempotentResponse: true,
           expense: existingExpense,
         });
       }
@@ -29,13 +49,14 @@ export const createExpense = async (req, res, next) => {
       category,
       description,
       date,
-      idempotencyKey,
+      idempotencyKey: idempotencyKey || null,
     });
 
     const savedExpense = await newExpense.save();
 
     res.status(201).json({
       message: 'Expense created successfully',
+      isIdempotentResponse: false,
       expense: savedExpense,
     });
   } catch (error) {
