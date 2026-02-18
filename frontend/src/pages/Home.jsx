@@ -3,6 +3,7 @@ import ExpenseForm from '../components/ExpenseForm.jsx';
 import ExpenseTable from '../components/ExpenseTable.jsx';
 import FilterBar from '../components/FilterBar.jsx';
 import TotalBar from '../components/TotalBar.jsx';
+import CategorySummary from '../components/CategorySummary.jsx';
 import ErrorAlert from '../components/ErrorAlert.jsx';
 import SuccessAlert from '../components/SuccessAlert.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
@@ -219,6 +220,11 @@ function Home() {
               selectedCategory={selectedCategory}
               selectedSort={selectedSort}
             />
+
+            {/* Category Summary */}
+            {expenses.length > 0 && !isFetching && !selectedCategory && (
+              <CategorySummary expenses={expenses} />
+            )}
 
             {/* Loading State */}
             {isFetching && (
