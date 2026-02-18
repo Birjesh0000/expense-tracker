@@ -36,13 +36,21 @@ A minimal full-stack personal finance tool to record and review expenses. Built 
 - Jest 30 for automated testing
 - AbortController for request cancellation
 
+## Live Deployment
+
+**Frontend**: https://expense-tracker-india.vercel.app (Vercel)
+**Backend**: https://expense-tracker-backend-issf.onrender.com (Render)
+**Database**: MongoDB Atlas (Cloud)
+
 ## Setup & Installation
 
-### Prerequisites
-- Node.js (v16+)
-- MongoDB (local or Atlas URI)
+### Local Development
 
-### Backend Setup
+#### Prerequisites
+- Node.js (v16+)
+- MongoDB (local) or MongoDB Atlas URI
+
+#### Backend Setup
 ```bash
 cd backend
 npm install
@@ -52,6 +60,7 @@ Create `.env` file:
 ```
 MONGODB_URI=mongodb://localhost:27017/expense-tracker
 PORT=5000
+NODE_ENV=development
 ```
 
 Start backend:
@@ -61,7 +70,7 @@ npm run dev
 
 Backend runs on `http://localhost:5000`
 
-### Frontend Setup
+#### Frontend Setup
 ```bash
 cd frontend
 npm install
@@ -77,7 +86,28 @@ Start frontend:
 npm run dev
 ```
 
-Frontend runs on `http://localhost:3004`
+Frontend runs on `http://localhost:5173`
+
+### Production Deployment
+
+#### Backend (Render)
+1. Push code to GitHub
+2. Create new Web Service on Render
+3. Connect GitHub repository
+4. Set Root Directory: `backend`
+5. Set environment variable: `MONGODB_URI` with MongoDB Atlas connection string
+6. Deploy
+
+#### Frontend (Vercel)
+1. Push code to GitHub
+2. Import project in Vercel
+3. Set project root: `frontend`
+4. Add environment variable:
+   - Name: `VITE_API_URL`
+   - Value: `https://your-backend-url.onrender.com/api`
+5. Deploy
+
+**CORS Configuration**: Backend is configured to allow requests from production frontend URL
 
 ## Testing
 

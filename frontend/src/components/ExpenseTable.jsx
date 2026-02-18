@@ -18,19 +18,9 @@ function ExpenseTable({ expenses }) {
           <h2 className="text-2xl font-bold text-slate-900">Expenses</h2>
         </div>
         <div className="text-center py-16">
-          <svg
-            className="mx-auto h-16 w-16 text-indigo-300 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <div className="mx-auto h-16 w-16 flex items-center justify-center mb-4">
+            <span className="text-5xl text-indigo-300">₹</span>
+          </div>
           <h3 className="text-lg font-medium text-slate-900 mb-2">No expenses yet</h3>
           <p className="text-slate-500">Get started by adding your first expense using the form.</p>
         </div>
