@@ -26,20 +26,28 @@ function generateIdempotencyKey() {
  * @param {Object} retryOptions - Retry configuration
  * @returns {Promise<Object>} Response from server
  */
-export const createExpense = async (expenseData, signal, retryOptions = {}) => {
+export const createExpense = async (expenseData, options = {}) => {
+  const { signal, maxRetries = 3, initialDelay = 1000, maxDelay = 10000, backoffMultiplier = 2, onRetry } = options;
+  
   const idempotencyKey = generateIdempotencyKey();
 
-  const makeRequest = async (abortSignal = signal) => {
+  const makeRequest = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/expenses`, {
+      const fetchOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Idempotency-Key': idempotencyKey,
         },
         body: JSON.stringify(expenseData),
-        signal: abortSignal,
-      });
+      };
+
+      // Only add signal if provided and is a valid AbortSignal
+      if (signal instanceof AbortSignal) {
+        fetchOptions.signal = signal;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/expenses`, fetchOptions);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -57,18 +65,14 @@ export const createExpense = async (expenseData, signal, retryOptions = {}) => {
     }
   };
 
-  // Use retry logic if enabled
-  if (retryOptions.enabled !== false) {
-    return retryWithBackoff(() => makeRequest(signal), {
-      maxRetries: retryOptions.maxRetries || 3,
-      initialDelay: retryOptions.initialDelay || 1000,
-      maxDelay: retryOptions.maxDelay || 10000,
-      backoffMultiplier: retryOptions.backoffMultiplier || 2,
-      onRetry: retryOptions.onRetry,
-    });
-  }
-
-  return makeRequest(signal);
+  // Use retry logic
+  return retryWithBackoff(() => makeRequest(), {
+    maxRetries,
+    initialDelay,
+    maxDelay,
+    backoffMultiplier,
+    onRetry,
+  });
 };
 
 /**
@@ -78,17 +82,19 @@ export const createExpense = async (expenseData, signal, retryOptions = {}) => {
  * @param {Object} retryOptions - Retry configuration
  * @returns {Promise<Object>} List of expenses and total
  */
-export const getExpenses = async (options = {}, signal, retryOptions = {}) => {
-  const makeRequest = async (abortSignal = signal) => {
+export const getExpenses = async (options = {}) => {
+  const { category, sort, signal, maxRetries = 3, initialDelay = 1000, maxDelay = 10000, backoffMultiplier = 2, onRetry } = options;
+
+  const makeRequest = async () => {
     try {
       const params = new URLSearchParams();
 
-      if (options.category) {
-        params.append('category', options.category);
+      if (category) {
+        params.append('category', category);
       }
 
-      if (options.sort) {
-        params.append('sort', options.sort);
+      if (sort) {
+        params.append('sort', sort);
       }
 
       const queryString = params.toString();
@@ -96,13 +102,19 @@ export const getExpenses = async (options = {}, signal, retryOptions = {}) => {
         ? `${API_BASE_URL}/expenses?${queryString}`
         : `${API_BASE_URL}/expenses`;
 
-      const response = await fetch(url, {
+      const fetchOptions = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: abortSignal,
-      });
+      };
+
+      // Only add signal if provided and is a valid AbortSignal
+      if (signal instanceof AbortSignal) {
+        fetchOptions.signal = signal;
+      }
+
+      const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -120,18 +132,14 @@ export const getExpenses = async (options = {}, signal, retryOptions = {}) => {
     }
   };
 
-  // Use retry logic if enabled
-  if (retryOptions.enabled !== false) {
-    return retryWithBackoff(() => makeRequest(signal), {
-      maxRetries: retryOptions.maxRetries || 3,
-      initialDelay: retryOptions.initialDelay || 1000,
-      maxDelay: retryOptions.maxDelay || 10000,
-      backoffMultiplier: retryOptions.backoffMultiplier || 2,
-      onRetry: retryOptions.onRetry,
-    });
-  }
-
-  return makeRequest(signal);
+  // Use retry logic
+  return retryWithBackoff(() => makeRequest(), {
+    maxRetries,
+    initialDelay,
+    maxDelay,
+    backoffMultiplier,
+    onRetry,
+  });
 };
 
 /**

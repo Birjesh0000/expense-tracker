@@ -52,17 +52,16 @@ function Home() {
     setRetryAttempt(0);
 
     try {
-      const response = await expenseApi.getExpenses(
-        options,
-        {
-          signal: fetchAbortControllerRef.current.signal,
-          ...RETRY_CONFIG,
-          onRetry: ({ attempt, maxRetries }) => {
-            setRetryAttempt(attempt);
-            console.log(`Retrying fetch: attempt ${attempt}/${maxRetries}`);
-          },
-        }
-      );
+      const response = await expenseApi.getExpenses({
+        category: options.category || selectedCategory,
+        sort: options.sort || selectedSort,
+        signal: fetchAbortControllerRef.current.signal,
+        ...RETRY_CONFIG,
+        onRetry: ({ attempt, maxRetries }) => {
+          setRetryAttempt(attempt);
+          console.log(`Retrying fetch: attempt ${attempt}/${maxRetries}`);
+        },
+      });
 
       if (response.status === 'success') {
         setExpenses(response.data.expenses || []);
