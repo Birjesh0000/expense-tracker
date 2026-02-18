@@ -1,4 +1,5 @@
 import Expense from '../models/Expense.js';
+import { validateExpenseData, sanitizeExpenseData } from '../utils/validation.utils.js';
 
 // POST /api/expenses - Create a new expense
 export const createExpense = async (req, res, next) => {
@@ -6,28 +7,26 @@ export const createExpense = async (req, res, next) => {
     const { amount, category, description, date } = req.body;
 
     // Get idempotency key from header (standard) or request body
-    const idempotencyKey = req.headers['idempotency-key'] || req.body.idempotencyKey;
+    const idempotencyKey = req.headers['idempotency-key'] || req.body?.idempotencyKey;
 
-    // Validate required fields
-    if (!amount || !category || !description || !date) {
+    // Validate input data
+    const validation = validateExpenseData({ amount, category, description, date });
+    if (!validation.isValid) {
       return res.status(400).json({
-        error: 'Missing required fields: amount, category, description, date',
+        status: 'error',
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        errors: validation.errors,
       });
     }
 
-    // Validate amount is positive
-    if (Number(amount) <= 0) {
-      return res.status(400).json({
-        error: 'Amount must be greater than 0',
-      });
-    }
-
-    // Handle idempotency - check for duplicate submission
+    // Validate idempotency key if provided
     if (idempotencyKey) {
-      // Validate idempotency key format (UUID or string)
       if (typeof idempotencyKey !== 'string' || idempotencyKey.trim().length === 0) {
         return res.status(400).json({
-          error: 'Idempotency-Key must be a non-empty string',
+          status: 'error',
+          code: 'INVALID_IDEMPOTENCY_KEY',
+          message: 'Idempotency-Key must be a non-empty string',
         });
       }
 
@@ -36,28 +35,37 @@ export const createExpense = async (req, res, next) => {
       if (existingExpense) {
         // Return existing response (idempotent behavior)
         return res.status(200).json({
+          status: 'success',
           message: 'Expense already created',
           isIdempotentResponse: true,
-          expense: existingExpense,
+          data: {
+            expense: existingExpense,
+          },
         });
       }
     }
 
+    // Sanitize input data
+    const sanitizedData = sanitizeExpenseData({ amount, category, description, date });
+
     // Create new expense
     const newExpense = new Expense({
-      amount,
-      category,
-      description,
-      date,
-      idempotencyKey: idempotencyKey || null,
+      amount: sanitizedData.amount,
+      category: sanitizedData.category,
+      description: sanitizedData.description,
+      date: sanitizedData.date,
+      idempotencyKey: idempotencyKey ? idempotencyKey.trim() : null,
     });
 
     const savedExpense = await newExpense.save();
 
     res.status(201).json({
+      status: 'success',
       message: 'Expense created successfully',
       isIdempotentResponse: false,
-      expense: savedExpense,
+      data: {
+        expense: savedExpense,
+      },
     });
   } catch (error) {
     next(error);
@@ -72,7 +80,15 @@ export const getExpenses = async (req, res, next) => {
     // Build filter object
     let filter = {};
     if (category) {
-      filter.category = category;
+      // Validate and sanitize category parameter
+      if (typeof category !== 'string' || category.trim().length === 0) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'INVALID_FILTER',
+          message: 'Category filter must be a non-empty string',
+        });
+      }
+      filter.category = category.trim();
     }
 
     // Build sort object
@@ -81,12 +97,15 @@ export const getExpenses = async (req, res, next) => {
       sortOptions = { date: -1 };
     } else if (sort === 'date_asc') {
       sortOptions = { date: 1 };
+    } else if (sort && sort !== 'created_desc') {
+      // Warn about invalid sort parameter
+      console.warn('Invalid sort parameter:', sort);
     }
 
     // Query expenses
     const expenses = await Expense.find(filter).sort(sortOptions);
 
-    // Calculate total
+    // Calculate total using aggregation
     const totalResult = await Expense.aggregate([
       { $match: filter },
       {
@@ -102,9 +121,13 @@ export const getExpenses = async (req, res, next) => {
     const total = totalResult[0]?.total || 0;
 
     res.status(200).json({
-      expenses,
-      total,
-      count: expenses.length,
+      status: 'success',
+      message: 'Expenses retrieved successfully',
+      data: {
+        expenses,
+        total,
+        count: expenses.length,
+      },
     });
   } catch (error) {
     next(error);
