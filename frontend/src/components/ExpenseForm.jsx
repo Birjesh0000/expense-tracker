@@ -1,33 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import usePersistentFormState from '../hooks/usePersistentFormState.jsx';
+import React, { useState } from 'react';
 
 function ExpenseForm({ onSubmit, isLoading }) {
-  const initialState = {
+  const [formData, setFormData] = useState({
     amount: '',
     category: '',
     description: '',
     date: '',
-  };
-
-  // Use persistent form state (survives page refreshes)
-  const { formData, updateFormData, clearFormData, hasSavedData } = usePersistentFormState(
-    'expenseFormData',
-    initialState
-  );
+  });
 
   // Prevent multiple submissions with local state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempts, setSubmitAttempts] = useState(0);
-  const [showRecoveryMessage, setShowRecoveryMessage] = useState(false);
-
-  // Show recovery message if form was restored
-  useEffect(() => {
-    if (hasSavedData) {
-      setShowRecoveryMessage(true);
-      const timer = setTimeout(() => setShowRecoveryMessage(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasSavedData]);
 
   // Combined disabled state
   const isDisabled = isLoading || isSubmitting;
@@ -38,7 +21,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
     // Prevent changes while submitting
     if (isSubmitting) return;
 
-    updateFormData({ [name]: value });
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -64,7 +50,12 @@ function ExpenseForm({ onSubmit, isLoading }) {
       await onSubmit(formData);
 
       // Reset form on success
-      clearFormData();
+      setFormData({
+        amount: '',
+        category: '',
+        description: '',
+        date: '',
+      });
       setSubmitAttempts(0);
     } catch (error) {
       console.error('Form submission error:', error);
@@ -76,17 +67,8 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Add New Expense</h2>
-
-      {/* Recovery Message */}
-      {showRecoveryMessage && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-sm text-blue-800">
-            ✓ Form data recovered from previous session
-          </p>
-        </div>
-      )}
-
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Expense</h2>
+      
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {/* Amount Field */}
         <div>
