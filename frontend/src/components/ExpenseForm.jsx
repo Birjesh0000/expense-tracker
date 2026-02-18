@@ -112,41 +112,46 @@ function ExpenseForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-8 border border-slate-200">
-      <h2 className="text-2xl font-bold text-slate-900 mb-8">Add New Expense</h2>
+    <div className="bg-white shadow-lg rounded-xl p-8 border border-indigo-200 hover:shadow-xl transition-shadow">
+      <div className="flex items-center gap-2 mb-8">
+        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-bold text-sm">+</div>
+        <h2 className="text-2xl font-bold text-slate-900">Add New Expense</h2>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Amount Field */}
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-slate-700 mb-2">
-            Amount
+          <label htmlFor="amount" className="block text-sm font-semibold text-slate-700 mb-2">
+            Amount (₹)
           </label>
-          <input
-            type="number"
-            id="amount"
-            name="amount"
-            value={formData.amount}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="0.00"
-            step="0.01"
-            min="0"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition ${
-              touchedFields.amount && fieldErrors.amount
-                ? 'border-red-500'
-                : 'border-slate-300'
-            }`}
-            disabled={isDisabled}
-            required
-          />
-          {touchedFields.amount && (
-            <ValidationError message={fieldErrors.amount} />
-          )}
+          <div className="relative">
+            <input
+              type="number"
+              id="amount"
+              name="amount"
+              value={formData.amount}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              className={`w-full px-4 py-3 border-2 rounded-lg shadow-sm placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-indigo-50 disabled:cursor-not-allowed transition bg-gradient-to-br from-indigo-50 to-white ${
+                touchedFields.amount && fieldErrors.amount
+                  ? 'border-red-400'
+                  : 'border-indigo-200'
+              }`}
+              disabled={isDisabled}
+              required
+            />
+            {touchedFields.amount && (
+              <ValidationError message={fieldErrors.amount} />
+            )}
+          </div>
         </div>
 
         {/* Category Field */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">
+          <label htmlFor="category" className="block text-sm font-semibold text-slate-700 mb-2">
             Category
           </label>
           <select
@@ -155,10 +160,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             value={formData.category}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition ${
+            className={`w-full px-4 py-3 border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-indigo-50 disabled:cursor-not-allowed transition bg-gradient-to-br from-indigo-50 to-white ${
               touchedFields.category && fieldErrors.category
-                ? 'border-red-500'
-                : 'border-slate-300'
+                ? 'border-red-400'
+                : 'border-indigo-200'
             }`}
             disabled={isDisabled}
             required
@@ -180,7 +185,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
         {/* Description Field */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-2">
+          <label htmlFor="description" className="block text-sm font-semibold text-slate-700 mb-2">
             Description
           </label>
           <textarea
@@ -191,10 +196,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             onBlur={handleBlur}
             placeholder="Enter expense details"
             rows="3"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed resize-none transition ${
+            className={`w-full px-4 py-3 border-2 rounded-lg shadow-sm placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-indigo-50 disabled:cursor-not-allowed resize-none transition bg-gradient-to-br from-indigo-50 to-white ${
               touchedFields.description && fieldErrors.description
-                ? 'border-red-500'
-                : 'border-slate-300'
+                ? 'border-red-400'
+                : 'border-indigo-200'
             }`}
             disabled={isDisabled}
             required
@@ -206,7 +211,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
         {/* Date Field */}
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-2">
+          <label htmlFor="date" className="block text-sm font-semibold text-slate-700 mb-2">
             Date
           </label>
           <input
@@ -216,10 +221,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             value={formData.date}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition ${
+            className={`w-full px-4 py-3 border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-indigo-50 disabled:cursor-not-allowed transition bg-gradient-to-br from-indigo-50 to-white ${
               touchedFields.date && fieldErrors.date
-                ? 'border-red-500'
-                : 'border-slate-300'
+                ? 'border-red-400'
+                : 'border-indigo-200'
             }`}
             disabled={isDisabled}
             required
@@ -233,7 +238,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
         <button
           type="submit"
           disabled={isDisabled || Object.values(fieldErrors).some(e => e)}
-          className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 disabled:bg-slate-400 text-white font-medium py-2 px-4 rounded-md disabled:opacity-70 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center space-x-2 mt-8"
+          className="w-full bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-700 hover:via-blue-700 hover:to-indigo-800 disabled:bg-slate-400 text-white font-bold py-3 px-4 rounded-lg disabled:opacity-70 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center space-x-2 mt-8 shadow-lg hover:shadow-indigo-300/50"
         >
           {isDisabled ? (
             <>

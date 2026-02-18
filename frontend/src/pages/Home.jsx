@@ -170,12 +170,17 @@ function Home() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900">Expense Tracker</h1>
-          <p className="text-slate-600 mt-2">Track and manage your personal expenses</p>
+        {/* Header with gradient background */}
+        <div className="mb-8 pb-6 border-b-2 border-indigo-200">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">₹</span>
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900">Expense Tracker</h1>
+          </div>
+          <p className="text-slate-600 mt-2">Track and manage your personal expenses with ease</p>
         </div>
 
         {/* Success Message */}
