@@ -170,12 +170,12 @@ function Home() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Expense Tracker</h1>
-          <p className="text-gray-600 mt-2">Track and manage your personal expenses</p>
+          <h1 className="text-4xl font-bold text-slate-900">Expense Tracker</h1>
+          <p className="text-slate-600 mt-2">Track and manage your personal expenses</p>
         </div>
 
         {/* Success Message */}

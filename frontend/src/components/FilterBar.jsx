@@ -14,20 +14,20 @@ function FilterBar({ onFilterChange, onSortChange, selectedCategory, selectedSor
   ];
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter & Sort</h3>
+    <div className="bg-white shadow-lg rounded-lg p-6 border border-slate-200">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Filter & Sort</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Category Filter */}
         <div>
-          <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="category-filter" className="block text-sm font-medium text-slate-700 mb-2">
             Category
           </label>
           <select
             id="category-filter"
             value={selectedCategory}
             onChange={(e) => onFilterChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"
           >
             {categories.map((category) => (
               <option key={category} value={category === 'All' ? '' : category}>
@@ -39,14 +39,14 @@ function FilterBar({ onFilterChange, onSortChange, selectedCategory, selectedSor
 
         {/* Sort Options */}
         <div>
-          <label htmlFor="sort-option" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="sort-option" className="block text-sm font-medium text-slate-700 mb-2">
             Sort By
           </label>
           <select
             id="sort-option"
             value={selectedSort}
             onChange={(e) => onSortChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"
           >
             <option value="date_desc">Newest First</option>
             <option value="date_asc">Oldest First</option>

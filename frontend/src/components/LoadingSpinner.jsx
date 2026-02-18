@@ -4,10 +4,10 @@ function LoadingSpinner({ message = 'Loading...' }) {
   return (
     <div className="flex flex-col items-center justify-center py-12">
       <div className="relative inline-block">
-        <div className="absolute inset-0 bg-blue-600 rounded-full opacity-25 animate-pulse"></div>
+        <div className="absolute inset-0 bg-indigo-600 rounded-full opacity-25 animate-pulse"></div>
         <div className="relative">
           <svg
-            className="animate-spin h-12 w-12 text-blue-600"
+            className="animate-spin h-12 w-12 text-indigo-600"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -28,7 +28,7 @@ function LoadingSpinner({ message = 'Loading...' }) {
           </svg>
         </div>
       </div>
-      <p className="text-gray-600 mt-4 font-medium">{message}</p>
+      <p className="text-slate-600 mt-4 font-medium">{message}</p>
     </div>
   );
 }

@@ -36,8 +36,8 @@ function CategorySummary({ expenses }) {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-4">Spending by Category</h3>
+    <div className="bg-white shadow-lg rounded-lg p-6 border border-slate-200">
+      <h3 className="text-lg font-bold text-slate-900 mb-4">Spending by Category</h3>
       
       <div className="space-y-3">
         {sortedCategories.map((item) => {
@@ -50,19 +50,19 @@ function CategorySummary({ expenses }) {
               {/* Category Header */}
               <div className="flex justify-between items-center mb-1">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{item.category}</p>
-                  <p className="text-xs text-gray-500">{item.count} {item.count === 1 ? 'entry' : 'entries'}</p>
+                  <p className="text-sm font-medium text-slate-900">{item.category}</p>
+                  <p className="text-xs text-slate-500">{item.count} {item.count === 1 ? 'entry' : 'entries'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">{formatCurrency(item.total)}</p>
-                  <p className="text-xs text-gray-500">{percentage}%</p>
+                  <p className="text-sm font-semibold text-slate-900">{formatCurrency(item.total)}</p>
+                  <p className="text-xs text-slate-500">{percentage}%</p>
                 </div>
               </div>
               
               {/* Progress Bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-slate-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${percentage}%` }}
                 ></div>
               </div>

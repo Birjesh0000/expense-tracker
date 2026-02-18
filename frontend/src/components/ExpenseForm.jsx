@@ -112,13 +112,13 @@ function ExpenseForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">Add New Expense</h2>
+    <div className="bg-white shadow-lg rounded-lg p-8 border border-slate-200">
+      <h2 className="text-2xl font-bold text-slate-900 mb-8">Add New Expense</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Amount Field */}
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="amount" className="block text-sm font-medium text-slate-700 mb-2">
             Amount
           </label>
           <input
@@ -131,10 +131,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             placeholder="0.00"
             step="0.01"
             min="0"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition ${
               touchedFields.amount && fieldErrors.amount
                 ? 'border-red-500'
-                : 'border-gray-300'
+                : 'border-slate-300'
             }`}
             disabled={isDisabled}
             required
@@ -146,7 +146,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
         {/* Category Field */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">
             Category
           </label>
           <select
@@ -155,10 +155,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             value={formData.category}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition ${
               touchedFields.category && fieldErrors.category
                 ? 'border-red-500'
-                : 'border-gray-300'
+                : 'border-slate-300'
             }`}
             disabled={isDisabled}
             required
@@ -180,7 +180,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
         {/* Description Field */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-2">
             Description
           </label>
           <textarea
@@ -191,10 +191,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             onBlur={handleBlur}
             placeholder="Enter expense details"
             rows="3"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none transition ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed resize-none transition ${
               touchedFields.description && fieldErrors.description
                 ? 'border-red-500'
-                : 'border-gray-300'
+                : 'border-slate-300'
             }`}
             disabled={isDisabled}
             required
@@ -206,7 +206,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
         {/* Date Field */}
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-2">
             Date
           </label>
           <input
@@ -216,10 +216,10 @@ function ExpenseForm({ onSubmit, isLoading }) {
             value={formData.date}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition ${
               touchedFields.date && fieldErrors.date
                 ? 'border-red-500'
-                : 'border-gray-300'
+                : 'border-slate-300'
             }`}
             disabled={isDisabled}
             required
@@ -233,7 +233,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
         <button
           type="submit"
           disabled={isDisabled || Object.values(fieldErrors).some(e => e)}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-md disabled:opacity-70 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center space-x-2 mt-8"
+          className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 disabled:bg-slate-400 text-white font-medium py-2 px-4 rounded-md disabled:opacity-70 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center space-x-2 mt-8"
         >
           {isDisabled ? (
             <>
@@ -266,7 +266,7 @@ function ExpenseForm({ onSubmit, isLoading }) {
 
         {/* Submission Info */}
         {submitAttempts > 0 && (
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-slate-500 text-center">
             Submission attempt #{submitAttempts}
           </p>
         )}
