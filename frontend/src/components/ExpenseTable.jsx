@@ -74,7 +74,7 @@ function ExpenseTable({ expenses }) {
                   {expense.description}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900">
-                  {formatCurrency(expense.amount)}
+                  {formatCurrency(typeof expense.amount === 'object' ? Number(expense.amount.$numberDecimal) : Number(expense.amount))}
                 </td>
               </tr>
             ))}

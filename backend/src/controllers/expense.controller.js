@@ -97,7 +97,9 @@ export const getExpenses = async (req, res, next) => {
       sortOptions = { date: -1 };
     } else if (sort === 'date_asc') {
       sortOptions = { date: 1 };
-    } else if (sort && sort !== 'created_desc') {
+    } else if (sort === 'created_desc') {
+      sortOptions = { createdAt: -1 };
+    } else if (sort) {
       // Warn about invalid sort parameter
       console.warn('Invalid sort parameter:', sort);
     }
