@@ -19,17 +19,21 @@ function generateIdempotencyKey() {
 /**
  * Create a new expense
  * @param {Object} expenseData - { amount, category, description, date }
+ * @param {AbortSignal} signal - For request cancellation
  * @returns {Promise<Object>} Response from server
  */
-export const createExpense = async (expenseData) => {
+export const createExpense = async (expenseData, signal) => {
   try {
+    const idempotencyKey = generateIdempotencyKey();
+    
     const response = await fetch(`${API_BASE_URL}/expenses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Idempotency-Key': generateIdempotencyKey(),
+        'Idempotency-Key': idempotencyKey,
       },
       body: JSON.stringify(expenseData),
+      signal, // Allow request cancellation
     });
 
     if (!response.ok) {
@@ -39,6 +43,10 @@ export const createExpense = async (expenseData) => {
 
     return await response.json();
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Request was cancelled');
+      throw error;
+    }
     console.error('Error creating expense:', error);
     throw error;
   }
@@ -47,9 +55,10 @@ export const createExpense = async (expenseData) => {
 /**
  * Get all expenses with optional filtering and sorting
  * @param {Object} options - { category, sort }
+ * @param {AbortSignal} signal - For request cancellation
  * @returns {Promise<Object>} List of expenses and total
  */
-export const getExpenses = async (options = {}) => {
+export const getExpenses = async (options = {}, signal) => {
   try {
     const params = new URLSearchParams();
     
@@ -69,6 +78,7 @@ export const getExpenses = async (options = {}) => {
       headers: {
         'Content-Type': 'application/json',
       },
+      signal, // Allow request cancellation
     });
 
     if (!response.ok) {
@@ -78,6 +88,10 @@ export const getExpenses = async (options = {}) => {
 
     return await response.json();
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Request was cancelled');
+      throw error;
+    }
     console.error('Error fetching expenses:', error);
     throw error;
   }
